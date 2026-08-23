@@ -4,7 +4,6 @@ import { fetchConversationTrace, fetchConversations, fetchMetrics } from '../api
 import { ConversationFilters, type LogFilters } from '../components/logs/ConversationFilters'
 import { ConversationList } from '../components/logs/ConversationList'
 import { ErrorsPanel } from '../components/logs/ErrorsPanel'
-import { OverviewSection } from '../components/logs/OverviewSection'
 import { PerformanceSection } from '../components/logs/PerformanceSection'
 import { TraceView } from '../components/logs/TraceView'
 
@@ -44,14 +43,6 @@ export function LogsPage() {
 
   return (
     <div className="flex flex-col gap-4" data-testid="logs-page">
-      {!selectedId && (
-        <OverviewSection
-          totalConversations={conversations.length}
-          errorCount={errorConversations.length}
-          avgLatencyMs={metricsQuery.data?.avg_step_latency_ms}
-        />
-      )}
-
       <ConversationFilters value={filters} onChange={setFilters} />
 
       <div className="flex h-[420px] gap-4">

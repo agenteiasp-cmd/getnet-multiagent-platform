@@ -1,28 +1,28 @@
 # Getnet Multiagent Support Platform
 
-A multiagent AI customer-support platform for Getnet: a FastAPI orchestration
-backend (guardrails → router → knowledge/support/escalation agents) plus a
-React/TypeScript SaaS frontend for chatting with it and observing how the
-orchestration behaved.
+Uma plataforma de atendimento ao cliente com IA multiagente para a Getnet:
+um backend de orquestração em FastAPI (guardrails → router → agentes de
+knowledge/support/escalation) mais um frontend SaaS em React/TypeScript para
+conversar com ela e observar como a orquestração se comportou.
 
 - **Backend**: `backend/` — Python 3.12, FastAPI, LangChain, Pinecone, Tavily, OpenAI.
 - **Frontend**: `frontend/` — React 19, TypeScript, Vite, Tailwind CSS v4.
 
 ---
 
-## 1. Quick start
+## 1. Como rodar
 
-### 1.1 With Docker (backend only)
+### 1.1 Com Docker (só o backend)
 
 ```bash
 cp backend/.env.example backend/.env
-# fill in OPENAI_API_KEY, PINECONE_API_KEY, PINECONE_ENVIRONMENT,
-# PINECONE_INDEX_NAME, TAVILY_API_KEY in backend/.env
+# preencha OPENAI_API_KEY, PINECONE_API_KEY, PINECONE_ENVIRONMENT,
+# PINECONE_INDEX_NAME, TAVILY_API_KEY em backend/.env
 
 docker compose up --build
 ```
 
-This builds and starts the backend at `http://localhost:8000`. Try it:
+Isso builda e sobe o backend em `http://localhost:8000`. Para testar:
 
 ```bash
 curl -X POST http://localhost:8000/chat \
@@ -30,15 +30,15 @@ curl -X POST http://localhost:8000/chat \
   -d '{"message": "oi, tudo bem?", "user_id": "user-1"}'
 ```
 
-The `docker` image includes the `tests/` suite and dev dependencies, so the
-frontend's **Testes** page (which triggers `POST /tests/run`, a real `pytest`
-subprocess) also works against the containerized backend, not just a local
-dev setup.
+A imagem Docker inclui a suíte `tests/` e as dependências de desenvolvimento,
+então a página **Testes** do frontend (que dispara `POST /tests/run`, um
+subprocesso `pytest` real) também funciona contra o backend containerizado,
+não só contra um ambiente local.
 
 ### 1.2 Frontend
 
-The frontend is not part of `docker-compose.yml` (only the backend is, per
-scope) — run it with Node/npm, pointed at the backend:
+O frontend não faz parte do `docker-compose.yml` (só o backend faz, por
+escopo) — rode-o com Node/npm, apontado para o backend:
 
 ```bash
 cd frontend
@@ -47,27 +47,27 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Abra `http://localhost:5173`.
 
 ---
 
-## 2. Local development (without Docker)
+## 2. Desenvolvimento local (sem Docker)
 
 ### 2.1 Backend
 
-Requires Python 3.12 (a 3.13 venv also works for local dev/tests; the Docker
-image pins 3.12 exactly, per the challenge's stack requirement).
+Requer Python 3.12 (um venv 3.13 também funciona para dev/testes locais; a
+imagem Docker fixa 3.12 exatamente, conforme o requisito de stack do desafio).
 
 ```bash
 cd backend
 python3.12 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt   # includes requirements.txt + pytest tooling
-cp .env.example .env                  # fill in real credentials
+pip install -r requirements-dev.txt   # inclui requirements.txt + ferramentas de pytest
+cp .env.example .env                  # preencha com credenciais reais
 uvicorn app.main:app --reload
 ```
 
-Run the RAG ingestion once (creates the Pinecone index if it doesn't exist,
-embeds and upserts the Getnet corpus - see §4):
+Rode a ingestão do RAG uma vez (cria o índice Pinecone se ele não existir,
+gera embeddings e envia o corpus da Getnet — ver §5):
 
 ```bash
 python -m app.rag.ingest
@@ -83,34 +83,40 @@ npm run dev
 
 ---
 
-## 3. Testing
+## 3. Testes
 
 ### 3.1 Backend (pytest)
 
 ```bash
 cd backend
 source .venv/bin/activate
-pytest                 # full suite
-pytest tests/test_guardrails.py tests/test_router.py   # a subset
+pytest                 # suíte completa
+pytest tests/test_guardrails.py tests/test_router.py   # um subconjunto
 ```
 
-The suite covers, per agent/tool with the LLM mocked, plus real integration
-paths:
+A suíte cobre, por agente/tool com o LLM mockado, além de caminhos de
+integração reais:
 
-- Guardrails (regex rules + moderation, both blocking and pass-through)
-- Router (forced `classify_intent` tool call, chitchat direct-reply, dispatch)
-- Knowledge Agent (RAG path, web-search fallback, no-answer fallback)
-- Support Agent (each of its 5 tools, per-user data scoping, unknown-user fallback)
-- Escalation Agent (mock handoff call, response, observability capture)
-- `POST /chat` contract (validation, envelope consistency)
-- Observability (JSONL logger, SQLite store/index, end-to-end trace coherence)
-- Observability read APIs (`/conversations`, `/conversations/{id}/trace`, `/metrics`, `/agents/usage`, `/tokens/usage`)
-- Agent config store + its read/write/restore-default API
-- The test-runner API itself (`/tests/run`)
-- **An end-to-end test against all 10 challenge example cases, run live against real OpenAI/Pinecone/Tavily** (skipped automatically if `backend/.env` has no credentials configured)
+- Guardrails (regras regex + moderação, tanto bloqueio quanto passagem)
+- Router (chamada forçada da tool `classify_intent`, resposta direta de
+  chitchat, dispatch)
+- Knowledge Agent (caminho RAG, fallback de busca web, fallback de "sem resposta")
+- Support Agent (cada uma das suas 5 tools, escopo de dados por usuário,
+  fallback de usuário desconhecido)
+- Escalation Agent (chamada mock de handoff, resposta, captura de observabilidade)
+- Contrato de `POST /chat` (validação, consistência do envelope)
+- Observabilidade (logger JSONL, índice/store SQLite, coerência do trace ponta a ponta)
+- APIs de leitura de observabilidade (`/conversations`, `/conversations/{id}/trace`, `/metrics`, `/agents/usage`, `/tokens/usage`)
+- Store de configuração dos agentes + sua API de leitura/escrita/restauração de padrão
+- A própria API do executor de testes (`/tests/run`)
+- **Um teste ponta a ponta contra os 10 casos de exemplo do desafio, rodado
+  ao vivo contra OpenAI/Pinecone/Tavily reais** (pulado automaticamente se
+  `backend/.env` não tiver credenciais configuradas)
 
-The same suite is also runnable from the frontend's **Testes** page, which
-calls `POST /tests/run` and shows results in a terminal-style UI.
+A mesma suíte também pode ser executada pela página **Testes** do frontend,
+que chama `POST /tests/run` e mostra o resultado numa interface estilo
+terminal — incluindo um botão dedicado **"Executar todos os testes"** além
+da opção de rodar uma categoria específica.
 
 ### 3.2 Frontend (Vitest + Testing Library)
 
@@ -119,304 +125,337 @@ cd frontend
 npm test        # vitest run
 ```
 
-Every page has component tests with the API client mocked (message
-rendering, processing states, conditional sources, the live agent-flow
-panel, period-filter refetching, multi-filter conversation search, the
-clickable errors-to-trace flow, prompt save/restore, and the test-runner UI).
+Toda página tem testes de componente com o cliente da API mockado
+(renderização de mensagens, estados de processamento, fontes condicionais,
+o painel de fluxo do agente ao vivo, refetch por filtro de período, busca de
+conversas com múltiplos filtros, o fluxo clicável de erro até o trace, salvar/restaurar prompt, e a interface do executor de testes).
 
 ---
 
-## 4. Architecture
+## 4. Arquitetura
 
-### 4.1 Message workflow
+![Arquitetura da plataforma](docs/architecture.svg)
+
+### 4.1 Fluxo de uma mensagem
 
 ```
 POST /chat { message, user_id }
         │
         ▼
-  Guardrails (regex rules, then OpenAI moderation)
-        │  blocked? ──► refusal response (trace_id present, no agent ran)
-        ▼ safe
+  Guardrails (regras regex, depois moderação OpenAI)
+        │  bloqueado? ──► resposta de recusa (trace_id presente, nenhum agente rodou)
+        ▼ seguro
   Router Agent
-        │  forced tool call: classify_intent → knowledge | support | escalation | chitchat
+        │  chamada forçada de tool: classify_intent → knowledge | support | escalation | chitchat
         │
-        ├─ chitchat ──────────────► Router answers directly
-        ├─ knowledge ─────────────► Knowledge Agent (RAG or web search)
-        ├─ support ───────────────► Support Agent (tool-calling over mocked user data)
-        └─ escalation ────────────► Escalation Agent (mock human handoff)
+        ├─ chitchat ──────────────► Router responde diretamente
+        ├─ knowledge ─────────────► Knowledge Agent (RAG ou busca web)
+        ├─ support ───────────────► Support Agent (tool-calling sobre dados mockados)
+        └─ escalation ────────────► Escalation Agent (handoff humano mockado)
         │
         ▼
   { response, agent_used, intent, sources, tools_used, trace_id }
 ```
 
-Every request gets a unique `trace_id` (generated before guardrails run, so
-it's present even on a rejection) and every step along the way - guardrail
-check, router classification, agent generation, every tool/LLM call - is
-captured as an observability step under that same `trace_id` (§8).
+Toda requisição recebe um `trace_id` único (gerado antes dos guardrails
+rodarem, então está presente mesmo numa rejeição), e cada etapa do caminho —
+checagem de guardrail, classificação do router, geração do agente, cada
+chamada de tool/LLM — é capturada como um step de observabilidade sob esse
+mesmo `trace_id` (§8).
 
-### 4.2 Why a 5th "guardrails" pseudo-agent
+### 4.2 Por que um 5º pseudo-agente "guardrails"
 
-`agent_used` can be `"guardrails"` when a message is blocked before reaching
-the Router - this keeps the response contract uniform (always has an
-`agent_used`/`intent` pair) instead of a special-cased error shape.
+`agent_used` pode ser `"guardrails"` quando uma mensagem é bloqueada antes de
+chegar ao Router — isso mantém o contrato de resposta uniforme (sempre tem
+um par `agent_used`/`intent`) em vez de um formato de erro tratado como caso
+especial.
 
-### 4.3 Visual identity
+### 4.3 Identidade visual
 
-Dark-first "tech/neon" theme (default; toggle in the sidebar switches to a
-light variant, persisted in `localStorage`), replacing an earlier
-light-green draft. Base surfaces are black/dark-gray/white; Getnet red
-(`#EC0000`, confirmed from the brand guide) is a restrained accent for the
-logo and primary actions, not the dominant color; a neon accent set
-(`frontend/src/lib/theme.ts`) differentiates chart series and badges - only
-`--color-neon-yellow` is confirmed from the brand guide, the other four
-(pink/purple/cyan/lime) are estimated to match and clearly labeled as such
-in `frontend/src/index.css`, ready to swap for exact values. All colors are
-CSS custom properties (`@theme` tokens), never hardcoded per-component.
+Tema claro único (sem alternância para escuro — removida deliberadamente),
+com as cores reais do site da Getnet: fundo branco/cinza claro
+(`#FFFFFF`/`#F5F6F8`, conferidas ao vivo em getnet.com.br, não estimadas), e
+o vermelho da marca (`#EC0000`, confirmado no manual de marca) como acento
+para a logo, ações primárias e destaques pontuais — nunca a cor dominante de
+telas ou textos grandes. As séries de gráficos e badges usam só essa família
+de vermelho mais tons neutros de cinza-chumbo (`frontend/src/lib/theme.ts`)
+— uma paleta neon estimada (amarelo/rosa/roxo/ciano/lima) foi usada num
+rascunho anterior e removida depois de confirmar que a Getnet não tem essas
+cores no manual de marca. Todas as cores são tokens CSS (`@theme`/variáveis
+customizadas), nunca hardcoded por componente.
 
-### 4.4 Frontend structure (3-page sidebar)
+### 4.4 Estrutura do frontend (sidebar com 3 páginas)
 
-The sidebar has three items, not five - two of the original five pages are
-embedded as sections/tabs of another page instead of separate routes:
+A sidebar tem três itens, não cinco — duas das cinco páginas originais estão
+embutidas como seções/abas de outra página em vez de rotas separadas:
 
-- **Chat**: history, quick-reply suggestions (`lib/quickReplies.ts`,
-  configurable), 👍/👎 feedback per AI message, and the live agent-flow
-  panel - friendly Portuguese labels by default (`lib/stepLabels.ts`), with
-  an opt-in "detalhes técnicos" toggle for the raw step name/model/tokens.
-- **Dashboard**: period-filterable metrics/agent-usage/token-cost/rating
-  charts, plus the full **Logs & Observabilidade** view as a collapsible
-  section at the bottom of the page (collapsed by default).
-- **Configurações**: tabs for **Agentes** (full per-agent cards: prompt,
-  LLM/model selector, max token usage, tools with per-tool disable toggles,
-  enable/disable), **Prompts** (a focused all-prompts editor),
-  **LLMs** (a compact agent→model/max-tokens table), and **Testes** (the
-  terminal-style test runner, embedded rather than its own route).
+- **Chat**: histórico com rolagem automática para a última mensagem, logo
+  real da Getnet, sugestões rápidas configuráveis posicionadas acima do
+  campo de envio (`lib/quickReplies.ts`), feedback 👍/👎 por mensagem da IA
+  (renderizado fora do balão, junto com as fontes), e o painel de fluxo do
+  agente ao vivo — rótulos amigáveis em português por padrão
+  (`lib/stepLabels.ts`), com revelação progressiva em tempo real durante o
+  processamento (os dois primeiros passos, que sempre acontecem, aparecem
+  concluídos assim que terminam; o passo final mostra "consultando o agente
+  responsável..." até a resposta chegar, já que qual agente responde só é
+  conhecido nesse momento) e um toggle opcional de "detalhes técnicos" para
+  o nome bruto do step/modelo/tokens.
+- **Dashboard**: métricas filtráveis por período (conversas, taxa de erro,
+  latência média, tokens médios por conversa, custo estimado), gráficos de
+  uso por agente/avaliação por agente/tokens, e a view completa de **Logs &
+  Observabilidade** como uma seção recolhível no final da página (recolhida
+  por padrão).
+- **Configurações**: abas para **Agentes** (cards completos por agente:
+  prompt, seletor de LLM/modelo, limite máximo de tokens, tools com toggle
+  de desabilitar por tool, habilitar/desabilitar), **Prompts** (um editor
+  focado com todos os prompts), **LLMs** (uma tabela compacta
+  agente→modelo/max-tokens), e **Testes** (o executor de testes estilo
+  terminal, com botão para rodar uma categoria ou todas de uma vez, embutido
+  em vez de ter rota própria).
 
-### 4.5 Code layout
+### 4.5 Organização do código
 
 ```
 backend/app/
-  main.py             FastAPI app + router registration
-  config.py           pydantic-settings (the 5 required env vars)
-  orchestrator.py      guardrails → router → dispatch, ties everything together
-  guardrails/          regex rules, OpenAI moderation, pipeline
+  main.py             App FastAPI + registro das rotas
+  config.py           pydantic-settings (as 5 variáveis de ambiente obrigatórias)
+  orchestrator.py      guardrails → router → dispatch, une tudo
+  guardrails/          regras regex, moderação OpenAI, pipeline
   agents/               router.py, knowledge.py, support.py, escalation.py
-  llm/                   thin LangChain ChatOpenAI wrappers per agent
+  llm/                   wrappers finos de ChatOpenAI (LangChain) por agente
   tools/                 classify_intent, retrieval, web_search, support_tools, escalation_tool
   rag/                   corpus_sources.py, fetch.py, chunk.py, ingest.py, manifest.py
-  data/                  mocked per-user dataset (mock_users.py)
-  observability/         StepRecord model, JSONL logger, SQLite store, recorder, pricing
-  config_store/          JSON-file agent config store (Settings page)
+  data/                  dataset mockado por usuário (mock_users.py)
+  observability/         modelo StepRecord, logger JSONL, store SQLite, recorder, pricing
+  config_store/          store de configuração dos agentes em arquivo JSON (página Configurações)
   api/                    chat.py, conversations.py, metrics.py, agents_config.py, test_runner.py, feedback.py
-  models/                 Pydantic v2 request/response + internal pipeline dataclasses
+  models/                 request/response em Pydantic v2 + dataclasses internas do pipeline
 
 frontend/src/
-  api/                   typed client + types for every backend endpoint
+  api/                   cliente tipado + types para cada endpoint do backend
   components/             chat/, dashboard/, logs/, settings/, tests/, layout/
-  pages/                   ChatPage, DashboardPage, SettingsPage (embeds LogsPage/TestsPage)
-  hooks/                   useChat, useTestRun, useTheme
-  lib/                     quickReplies.ts, stepLabels.ts, theme.ts (neon accent hex), period.ts
+  pages/                   ChatPage, DashboardPage, SettingsPage (embute LogsPage/TestsPage)
+  hooks/                   useChat, useTestRun
+  lib/                     quickReplies.ts, stepLabels.ts, theme.ts (série de cores dos gráficos), period.ts
 ```
 
 ---
 
-## 5. RAG pipeline
+## 5. Pipeline de RAG
 
-**Ingestion → storage → retrieval → generation**, all in `backend/app/rag/`
-and `backend/app/agents/knowledge.py`.
+**Ingestão → armazenamento → recuperação → geração**, tudo em
+`backend/app/rag/` e `backend/app/agents/knowledge.py`.
 
-1. **Ingestion** (`rag/ingest.py`, run via `python -m app.rag.ingest`): fetches
-   each corpus URL (`rag/corpus_sources.py`) with `httpx`, strips
-   nav/script/style noise with BeautifulSoup (`rag/fetch.py`), and splits the
-   remaining text into ~1000-character chunks with 150-character overlap
-   using LangChain's `RecursiveCharacterTextSplitter` (`rag/chunk.py`).
-2. **Storage**: chunks are embedded with OpenAI `text-embedding-3-small` and
-   upserted into a Pinecone serverless index (auto-created with
-   `cloud="aws", region="us-east-1"` if it doesn't exist yet) via
-   `langchain-pinecone`'s `PineconeVectorStore`, tagged with `source_url` and
-   `topic` metadata.
-3. **Retrieval** (`tools/retrieval.py`): the Knowledge Agent runs a top-k
-   similarity search (`asimilarity_search_with_score`) against the same
-   vector store for every knowledge-intent question.
-4. **Generation** (`agents/knowledge.py`): if any retrieved passage clears a
-   relevance-score threshold, the agent generates an answer grounded only in
-   those passages (`RAG_SYSTEM_PROMPT`), citing each source's URL. If nothing
-   clears the threshold - i.e. the question is judged out of the corpus's
-   scope (weather, general trivia, etc.) - the agent instead calls the
-   Tavily web-search tool (`tools/web_search.py`) and grounds the answer in
-   those results instead. If even web search returns nothing useful, the
-   agent says it can't answer rather than fabricating one.
+1. **Ingestão** (`rag/ingest.py`, rodado via `python -m app.rag.ingest`):
+   busca cada URL do corpus (`rag/corpus_sources.py`) com `httpx`, remove
+   ruído de navegação/script/estilo com BeautifulSoup (`rag/fetch.py`), e
+   divide o texto restante em blocos de ~1000 caracteres com 150 caracteres
+   de sobreposição usando o `RecursiveCharacterTextSplitter` do LangChain
+   (`rag/chunk.py`).
+2. **Armazenamento**: os blocos recebem embedding com o
+   `text-embedding-3-small` da OpenAI e são enviados a um índice serverless
+   do Pinecone (criado automaticamente com `cloud="aws", region="us-east-1"`
+   se ainda não existir) via `PineconeVectorStore` do `langchain-pinecone`,
+   marcados com metadados `source_url` e `topic`.
+3. **Recuperação** (`tools/retrieval.py`): o Knowledge Agent roda uma busca
+   por similaridade top-k (`asimilarity_search_with_score`) contra o mesmo
+   vector store para toda pergunta com intenção de knowledge.
+4. **Geração** (`agents/knowledge.py`): se algum trecho recuperado passa de
+   um limiar de relevância, o agente gera uma resposta fundamentada só
+   nesses trechos (`RAG_SYSTEM_PROMPT`), citando a URL de cada fonte. Se
+   nada passa do limiar — ou seja, a pergunta é julgada fora do escopo do
+   corpus (clima, curiosidades gerais, etc.) — o agente chama a tool de
+   busca web da Tavily (`tools/web_search.py`) e fundamenta a resposta
+   nesses resultados. Se nem a busca web retornar algo útil, o agente diz
+   que não pode responder em vez de inventar uma resposta.
 
-### 5.1 Ingested sources (manifest)
+### 5.1 Fontes ingeridas (manifest)
 
-Produced by `rag/manifest.py`, written to `backend/data_store/rag_manifest.json`
-on every ingestion run. Current contents:
+Produzido por `rag/manifest.py`, escrito em
+`backend/data_store/rag_manifest.json` a cada execução de ingestão. Conteúdo
+atual:
 
-| URL | Topic | Ingested | Chunks |
+| URL | Tópico | Ingerido em | Chunks |
 |---|---|---|---|
-| https://www.getnet.net/en | institutional (mandatory source) | 2026-08-23 | 5 |
+| https://www.getnet.net/en | institucional (fonte obrigatória) | 2026-08-23 | 5 |
 | https://site.getnet.com.br/maquininha/get-classica/ | Get Clássica | 2026-08-23 | 5 |
 | https://site.getnet.com.br/get-ajuda-maquininha/solucoes-get-smart/ | Get Smart | 2026-08-23 | 3 |
 | https://site.getnet.com.br/link-de-pagamento/ | Payment Link | 2026-08-23 | 5 |
 | https://site.getnet.com.br/get-ajuda-antecipacao-de-venda/como-antecipar-sua-vendas-pelo-app/ | Antecipação de recebíveis | 2026-08-23 | 3 |
 | https://site.getnet.com.br/duvidas/ | FAQ | 2026-08-23 | 75 |
-| https://site.getnet.com.br/link-de-pagamento-getnet/ | Blog (Payment Link / WhatsApp selling) | 2026-08-23 | 5 |
+| https://site.getnet.com.br/link-de-pagamento-getnet/ | Blog (venda por Payment Link / WhatsApp) | 2026-08-23 | 5 |
 
-Re-run `python -m app.rag.ingest` any time to refresh this table (both the
-JSON file and the Pinecone index are updated).
+Rode `python -m app.rag.ingest` novamente a qualquer momento para atualizar
+essa tabela (tanto o arquivo JSON quanto o índice Pinecone são atualizados).
 
 ---
 
-## 6. How LLM tools were used
+## 6. Como as tools de LLM foram usadas
 
-| Tool | Used by | Forced? | Purpose |
+| Tool | Usada por | Forçada? | Propósito |
 |---|---|---|---|
-| `classify_intent` | Router | **Yes** (`tool_choice`) | Intent is always read from this tool's structured output, never parsed from free text |
-| `pinecone_retrieval` | Knowledge Agent | No (always attempted first) | Top-k passage lookup against the ingested corpus |
-| `tavily_web_search` | Knowledge Agent | No (fallback) | Live web search when retrieval isn't relevant enough |
-| `get_settlement_schedule`, `get_transaction_status`, `get_device_status`, `get_account_info`, `get_installment_plan` | Support Agent | No (LLM picks 0+ of these) | Real function-calling: the model decides which mocked-data lookups the question needs, results are scoped server-side to the request's `user_id` (never LLM-supplied) |
-| `mock_handoff_call` | Escalation Agent | N/A (always called, not an LLM tool) | Mocked external handoff, deterministic confirmation (no LLM call, to avoid hallucinated ticket details) |
+| `classify_intent` | Router | **Sim** (`tool_choice`) | A intenção é sempre lida da saída estruturada dessa tool, nunca extraída de texto livre |
+| `pinecone_retrieval` | Knowledge Agent | Não (sempre tentada primeiro) | Busca top-k de trechos contra o corpus ingerido |
+| `tavily_web_search` | Knowledge Agent | Não (fallback) | Busca web ao vivo quando a recuperação não é relevante o suficiente |
+| `get_settlement_schedule`, `get_transaction_status`, `get_device_status`, `get_account_info`, `get_installment_plan` | Support Agent | Não (o LLM escolhe 0+ delas) | Function-calling de verdade: o modelo decide quais consultas de dados mockados a pergunta precisa; os resultados são escopados no servidor pelo `user_id` da requisição (nunca fornecido pelo LLM) |
+| `mock_handoff_call` | Escalation Agent | N/A (sempre chamada, não é uma tool de LLM) | Handoff externo mockado, confirmação determinística (sem chamada de LLM, para evitar detalhes de chamado alucinados) |
 
-The Support Agent is the clearest example of open-ended tool-calling: it
-binds all 5 tools to one `ChatOpenAI` call, lets the model choose which
-(if any) apply to the question, executes them, then feeds the results back
-as `ToolMessage`s in a second call to produce the final answer.
+O Support Agent é o exemplo mais claro de tool-calling aberto: ele vincula
+as 5 tools numa única chamada ao `ChatOpenAI`, deixa o modelo escolher quais
+(se alguma) se aplicam à pergunta, executa-as, e então alimenta os
+resultados de volta como `ToolMessage`s numa segunda chamada para produzir a
+resposta final.
 
-### 6.1 Per-agent `max_tokens` and `disabled_features` (Configurações page)
+### 6.1 `max_tokens` e `disabled_features` por agente (página Configurações)
 
-Each agent's config (`GET/PUT /agents/config/{agent}`) has a `max_tokens`
-ceiling and a `disabled_features` list, both **enforced at request time**,
-not just displayed:
+A configuração de cada agente (`GET/PUT /agents/config/{agent}`) tem um
+limite de `max_tokens` e uma lista `disabled_features`, ambos **aplicados de
+verdade no momento da requisição**, não só exibidos:
 
-- **`max_tokens`** is passed straight through as the underlying
-  `ChatOpenAI` call's own max-output-tokens parameter - but **only on
-  open-ended generation calls** (chitchat reply, RAG/web answer, Support's
-  final answer), never on a forced or tool-selection call. A tool call's
-  output is small, structured JSON; capping it too aggressively can
-  truncate the arguments mid-JSON and break parsing entirely instead of
-  just shortening an answer - this was a real bug caught by live testing
+- **`max_tokens`** é repassado diretamente como o próprio parâmetro de
+  máximo de tokens de saída da chamada `ChatOpenAI` — mas **só em chamadas
+  de geração aberta** (resposta de chitchat, resposta de RAG/web, resposta
+  final do Support), nunca numa chamada forçada ou de seleção de tool. A
+  saída de uma chamada de tool é um JSON estruturado pequeno; limitá-la
+  demais pode truncar os argumentos no meio do JSON e quebrar o parsing
+  inteiro em vez de só encurtar uma resposta — isso foi um bug real
+  encontrado em teste ao vivo
   (`tests/test_llm_enforcement.py::test_router_classify_intent_call_is_never_capped`).
-  When a call does hit its cap, its observability step status becomes
-  `"truncated"` instead of `"ok"`, so it's visible in Logs/Dashboard.
-- **`disabled_features`** holds tool names (the same names shown in each
-  agent's card, e.g. `tavily_web_search`, `get_installment_plan`) that the
-  agent must not use. The Knowledge Agent skips Tavily entirely when
-  `tavily_web_search` is disabled (falling through to its no-answer
-  response if RAG also finds nothing); the Support Agent excludes any
-  disabled tool from the schemas bound to its LLM call, so the model can
-  never select it in the first place.
+  Quando uma chamada atinge seu limite, o status do seu step de
+  observabilidade vira `"truncated"` em vez de `"ok"`, ficando visível em
+  Logs/Dashboard.
+- **`disabled_features`** guarda nomes de tools (os mesmos nomes exibidos no
+  card de cada agente, ex.: `tavily_web_search`, `get_installment_plan`)
+  que o agente não deve usar. O Knowledge Agent pula a Tavily por completo
+  quando `tavily_web_search` está desabilitada (caindo para a resposta de
+  "sem resposta" se o RAG também não achar nada); o Support Agent exclui
+  qualquer tool desabilitada dos schemas vinculados à sua chamada de LLM,
+  então o modelo nunca consegue selecioná-la.
 
-Saving either field clears the cached orchestrator (`get_orchestrator.cache_clear()`
-in `api/agents_config.py`) so the change applies on the very next request,
-no restart needed.
+Salvar qualquer um dos dois campos limpa o orquestrador em cache
+(`get_orchestrator.cache_clear()` em `api/agents_config.py`), então a
+mudança vale já na próxima requisição, sem precisar reiniciar.
 
 ---
 
 ## 7. Guardrails
 
-`backend/app/guardrails/` - runs before the Router, on every message:
+`backend/app/guardrails/` — roda antes do Router, em toda mensagem:
 
-1. **Regex rules** (`regex_rules.py`): a small curated set (prompt-injection
-   phrasing, requests for credentials/API keys, raw card-number patterns).
-   Cheap, no network call, checked first.
-2. **OpenAI moderation** (`moderation.py`): only reached if regex passes, to
-   avoid paying for a moderation call on already-blocked input.
+1. **Regras regex** (`regex_rules.py`): um conjunto pequeno e curado —
+   frases de prompt injection, pedidos de credenciais/API keys, padrões de
+   número de cartão, e três frentes adicionais: tentativas de jailbreak
+   ("burlar", "bypass", "modo sem restrições"), pedidos de dados de outro
+   cliente/usuário (risco de vazamento entre contas), e ações que
+   comprometeriam a integridade da plataforma (apagar/derrubar banco de
+   dados, servidor, sistema). Barato, sem chamada de rede, checado primeiro.
+2. **Moderação OpenAI** (`moderation.py`): só é alcançada se a regex passar,
+   para evitar pagar por uma chamada de moderação em uma entrada que já
+   seria bloqueada.
 
-Either check failing short-circuits the request with a refusal response
-that still carries a fresh `trace_id` and a `guardrails.check` observability
-step - the Router and every agent are skipped entirely (verified by
-`tests/test_orchestrator.py`).
+Qualquer uma das duas checagens falhando encerra a requisição com uma
+resposta de recusa que ainda carrega um `trace_id` novo e um step de
+observabilidade `guardrails.check` — o Router e todos os agentes são
+pulados por completo (verificado por `tests/test_orchestrator.py`).
 
-This is a challenge-scope guardrail stage, not a hardened content-safety
-system (see `openspec/changes/getnet-multiagent-platform/design.md` for the
-explicit non-goal).
-
----
-
-## 8. Reliability & observability
-
-Every `/chat` request is traced end-to-end under one `trace_id`:
-
-- **Capture** (`observability/models.py`, `jsonl_logger.py`): each pipeline
-  stage - guardrail check, router classification, agent generation, every
-  tool/LLM call - becomes a `StepRecord` (timestamp, input, output, model,
-  prompt/completion tokens, latency, status), appended to
-  `data_store/events.jsonl` as the source-of-truth audit log.
-- **Indexing** (`observability/store.py`): the same records are upserted
-  into SQLite (`data_store/observability.db`, tables `conversations` and
-  `steps`) so the read APIs can do simple, fast SQL aggregation instead of
-  scanning JSONL per request.
-- **Read APIs** (`api/conversations.py`, `api/metrics.py`):
-  - `GET /conversations` - list with filters (`start`, `end`, `agent`, `status`)
-  - `GET /conversations/{id}/trace` - full ordered step trace (404 if unknown)
-  - `GET /metrics` - aggregate counts, latency, error rate, period-filterable
-  - `GET /agents/usage` - invocation counts per agent
-  - `GET /tokens/usage` - token counts **and estimated cost** (see `observability/pricing.py`), broken down by model/agent
-- **User feedback** (`api/feedback.py`): `POST /feedback` persists a 👍/👎 rating
-  tied to a message's `trace_id`/`agent_used` (a new `feedback` table in the
-  same SQLite database); `GET /agents/feedback` returns per-agent aggregate
-  ratings (% positive, average score), period-filterable, for the Dashboard's
-  "Avaliação por agente" chart.
-
-### 8.1 Evaluation / observability strategy
-
-The frontend is the primary way to *judge* orchestration quality, not just
-observe it:
-
-- **Chat** page's live agent-flow panel makes the routing decision and tool
-  usage visible per message, immediately, in plain language by default (an
-  opt-in toggle reveals the technical step/model/token detail) - useful for
-  spot-checking whether a given message was classified/handled correctly.
-  Per-message 👍/👎 feedback lets a reviewer (or a real user) flag a bad
-  answer right where it happened.
-- **Dashboard** gives an aggregate, period-filterable read on service health
-  (volume by status, usage by agent, token cost, and per-agent feedback
-  ratings) - useful for judging whether the system is behaving consistently
-  over many requests, not just one.
-- **Logs & Observabilidade**, embedded as a collapsible section at the
-  bottom of the Dashboard, is the deep-dive tool: every conversation's full
-  step trace, multi-filter search (agent/status/date), and a clickable
-  errors area that jumps straight to the failing step - this is where a
-  reviewer would go to understand *why* a specific answer was wrong.
-- **Testes**, embedded as a tab inside Configurações, runs the real backend
-  pytest suite (including the 10 challenge example cases against live APIs)
-  from inside the product, so correctness can be checked without leaving
-  the browser or touching a terminal.
-
-Together these cover the three things worth judging: *did this one message
-get handled right* (Chat), *is the system healthy in aggregate* (Dashboard),
-and *can I prove the whole suite still passes* (Testes tab) - with the
-embedded Logs section as the bridge between the aggregate and the
-single-message view.
+Este é um estágio de guardrail no escopo do desafio, não um sistema de
+segurança de conteúdo robusto para produção (ver
+`openspec/changes/getnet-multiagent-platform/design.md` para o não-objetivo
+explícito).
 
 ---
 
-## 9. The fourth agent: Escalation
+## 8. Confiabilidade e observabilidade
 
-The Escalation Agent (`agents/escalation.py`) is this challenge's
-differentiator: when the Router classifies a message as `escalation`
-(explicit request for a human), it performs a mocked human-handoff call
-(`tools/escalation_tool.py` - a swappable async function, easy to point at a
-real handoff/CRM system later) and returns a deterministic confirmation
-(ticket id, queue position, estimated wait) with `agent_used="escalation"`.
-The handoff call is captured in `tools_used` and as an observability step
-exactly like any other tool call.
+Toda requisição a `/chat` é rastreada ponta a ponta sob um `trace_id`:
+
+- **Captura** (`observability/models.py`, `jsonl_logger.py`): cada etapa do
+  pipeline — checagem de guardrail, classificação do router, geração do
+  agente, cada chamada de tool/LLM — vira um `StepRecord` (timestamp,
+  entrada, saída, modelo, tokens de prompt/completion, latência, status),
+  adicionado a `data_store/events.jsonl` como o log de auditoria fonte da
+  verdade.
+- **Indexação** (`observability/store.py`): os mesmos registros são
+  gravados também no SQLite (`data_store/observability.db`, tabelas
+  `conversations` e `steps`) para que as APIs de leitura façam agregação
+  SQL simples e rápida em vez de varrer o JSONL a cada requisição.
+- **APIs de leitura** (`api/conversations.py`, `api/metrics.py`):
+  - `GET /conversations` — lista com filtros (`start`, `end`, `agent`, `status`)
+  - `GET /conversations/{id}/trace` — trace completo e ordenado dos steps (404 se desconhecido)
+  - `GET /metrics` — contagens agregadas, latência, taxa de erro, filtrável por período
+  - `GET /agents/usage` — contagem de invocações por agente
+  - `GET /tokens/usage` — contagem de tokens **e custo estimado** (ver `observability/pricing.py`), detalhado por modelo/agente
+- **Feedback do usuário** (`api/feedback.py`): `POST /feedback` persiste uma
+  avaliação 👍/👎 associada ao `trace_id`/`agent_used` de uma mensagem (uma
+  tabela `feedback` nova no mesmo banco SQLite); `GET /agents/feedback`
+  retorna avaliações agregadas por agente (% positivo, nota média),
+  filtrável por período, para o gráfico "Avaliação por agente" do Dashboard.
+
+### 8.1 Estratégia de avaliação / observabilidade
+
+O frontend é a forma principal de *julgar* a qualidade da orquestração, não
+só observá-la:
+
+- O painel de fluxo do agente ao vivo, na página **Chat**, torna a decisão
+  de roteamento e o uso de tools visível por mensagem, imediatamente, em
+  linguagem simples por padrão (um toggle opcional revela o detalhe técnico
+  de step/modelo/tokens) — útil para checar rapidamente se uma mensagem foi
+  classificada/tratada corretamente. O feedback 👍/👎 por mensagem deixa um
+  revisor (ou um usuário real) sinalizar uma resposta ruim bem onde ela
+  aconteceu.
+- O **Dashboard** dá uma leitura agregada e filtrável por período da saúde
+  do serviço (volume por status, uso por agente, custo de tokens, e
+  avaliações por agente) — útil para julgar se o sistema está se
+  comportando de forma consistente ao longo de muitas requisições, não só
+  uma.
+- **Logs & Observabilidade**, embutida como uma seção recolhível no final
+  do Dashboard, é a ferramenta de investigação profunda: o trace completo
+  de cada conversa, busca com múltiplos filtros (agente/status/data), e uma
+  área de erros clicável que pula direto para o step que falhou — é aqui
+  que um revisor iria para entender *por que* uma resposta específica saiu
+  errada.
+- **Testes**, embutida como uma aba dentro de Configurações, roda a suíte
+  pytest real do backend (incluindo os 10 casos de exemplo do desafio
+  contra APIs ao vivo) de dentro do próprio produto, para que a correção
+  possa ser checada sem sair do navegador ou tocar num terminal.
+
+Juntas, essas três coisas cobrem o que vale a pena julgar: *esta mensagem
+foi tratada corretamente* (Chat), *o sistema está saudável em agregado*
+(Dashboard), e *consigo provar que a suíte inteira ainda passa* (aba
+Testes) — com a seção de Logs embutida como a ponte entre a visão agregada
+e a visão de uma única mensagem.
 
 ---
 
-## 10. Environment variables
+## 9. O quarto agente: Escalation
 
-`backend/.env.example` documents all five required variables (no real
-values committed): `OPENAI_API_KEY`, `PINECONE_API_KEY`,
-`PINECONE_ENVIRONMENT`, `PINECONE_INDEX_NAME`, `TAVILY_API_KEY`, plus
-optional per-agent model overrides. Copy it to `backend/.env` (git-ignored)
-and fill in real values before running anything that hits a live API.
+O Escalation Agent (`agents/escalation.py`) é o diferencial deste desafio:
+quando o Router classifica uma mensagem como `escalation` (pedido explícito
+por um humano), ele executa uma chamada mockada de handoff humano
+(`tools/escalation_tool.py` — uma função assíncrona substituível, fácil de
+apontar para um sistema real de handoff/CRM depois) e retorna uma
+confirmação determinística (id do chamado, posição na fila, tempo estimado
+de espera) com `agent_used="escalation"`. A chamada de handoff é capturada
+em `tools_used` e como um step de observabilidade, igual a qualquer outra
+chamada de tool.
 
-`frontend/.env.example` documents `VITE_API_BASE_URL` (defaults to
+---
+
+## 10. Variáveis de ambiente
+
+`backend/.env.example` documenta as cinco variáveis obrigatórias (sem
+valores reais commitados): `OPENAI_API_KEY`, `PINECONE_API_KEY`,
+`PINECONE_ENVIRONMENT`, `PINECONE_INDEX_NAME`, `TAVILY_API_KEY`, além de
+overrides opcionais de modelo por agente. Copie para `backend/.env`
+(ignorado pelo git) e preencha com valores reais antes de rodar qualquer
+coisa que chame uma API ao vivo.
+
+`frontend/.env.example` documenta `VITE_API_BASE_URL` (padrão
 `http://localhost:8000`).
 
 ---
 
-## 11. Out of scope
+## 11. Fora do escopo
 
-Per the challenge brief: authentication/multi-tenancy, cloud deployment,
-and CI/CD are explicitly out of scope for this project.
+Conforme o briefing do desafio: autenticação/multi-tenancy, deploy em nuvem
+e CI/CD estão explicitamente fora do escopo deste projeto.

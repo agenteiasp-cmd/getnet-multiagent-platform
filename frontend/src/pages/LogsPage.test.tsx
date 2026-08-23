@@ -102,11 +102,6 @@ beforeEach(() => {
 })
 
 describe('LogsPage', () => {
-  it('shows the overview before any conversation is selected', async () => {
-    renderPage()
-    expect(await screen.findByTestId('logs-overview')).toBeInTheDocument()
-  })
-
   it('lists conversations with a timeline entry per item', async () => {
     renderPage()
     const items = await screen.findAllByTestId('conversation-list-item')
@@ -122,7 +117,6 @@ describe('LogsPage', () => {
 
     const steps = await screen.findAllByTestId('trace-step')
     expect(steps).toHaveLength(2)
-    expect(screen.queryByTestId('logs-overview')).not.toBeInTheDocument()
   })
 
   it('combining filters narrows the conversation list request', async () => {
