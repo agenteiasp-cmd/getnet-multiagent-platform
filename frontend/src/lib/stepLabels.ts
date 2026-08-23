@@ -9,6 +9,7 @@ export const STEP_LABELS: Record<string, string> = {
   'support.decide_tools': 'Consultando seus dados',
   'support.generate_answer': 'Organizando a resposta',
   'escalation.mock_handoff_call': 'Abrindo chamado para um atendente',
+  'escalation.mock_phone_transfer': 'Preparando transferência por telefone',
 }
 
 export function friendlyStepLabel(step: string): string {

@@ -298,7 +298,7 @@ essa tabela (tanto o arquivo JSON quanto o índice Pinecone são atualizados).
 | `pinecone_retrieval` | Knowledge Agent | Não (sempre tentada primeiro) | Busca top-k de trechos contra o corpus ingerido |
 | `tavily_web_search` | Knowledge Agent | Não (fallback) | Busca web ao vivo quando a recuperação não é relevante o suficiente |
 | `get_settlement_schedule`, `get_transaction_status`, `get_device_status`, `get_account_info`, `get_installment_plan` | Support Agent | Não (o LLM escolhe 0+ delas) | Function-calling de verdade: o modelo decide quais consultas de dados mockados a pergunta precisa; os resultados são escopados no servidor pelo `user_id` da requisição (nunca fornecido pelo LLM) |
-| `mock_handoff_call` | Escalation Agent | N/A (sempre chamada, não é uma tool de LLM) | Handoff externo mockado, confirmação determinística (sem chamada de LLM, para evitar detalhes de chamado alucinados) |
+| `mock_handoff_call` / `mock_phone_transfer_call` | Escalation Agent | N/A (sempre uma das duas é chamada, não é uma tool de LLM) | Handoff externo mockado — fila no chat, ou 0800 + código quando o usuário pede explicitamente por telefone (escolhido por palavra-chave na mensagem, ver §9); confirmação determinística, sem chamada de LLM, para evitar detalhes de chamado alucinados |
 
 O Support Agent é o exemplo mais claro de tool-calling aberto: ele vincula
 as 5 tools numa única chamada ao `ChatOpenAI`, deixa o modelo escolher quais
@@ -431,12 +431,22 @@ e a visão de uma única mensagem.
 
 O Escalation Agent (`agents/escalation.py`) é o diferencial deste desafio:
 quando o Router classifica uma mensagem como `escalation` (pedido explícito
-por um humano), ele executa uma chamada mockada de handoff humano
-(`tools/escalation_tool.py` — uma função assíncrona substituível, fácil de
-apontar para um sistema real de handoff/CRM depois) e retorna uma
-confirmação determinística (id do chamado, posição na fila, tempo estimado
-de espera) com `agent_used="escalation"`. A chamada de handoff é capturada
-em `tools_used` e como um step de observabilidade, igual a qualquer outra
+por um humano), ele executa uma chamada mockada de handoff e retorna uma
+confirmação determinística com `agent_used="escalation"`. Há dois fluxos
+mockados, escolhidos pelo próprio agente a partir do texto da mensagem
+(`tools/escalation_tool.py` — funções assíncronas substituíveis, fáceis de
+apontar para sistemas reais depois):
+
+- **Padrão (fila no chat)**: retorna id do chamado, posição na fila e tempo
+  estimado de espera — o usuário continua a conversa dentro do produto.
+- **Pedido explícito por telefone** (mensagem contém "ligação", "ligar",
+  "telefone" etc.): em vez de uma fila no chat, o agente responde com o
+  0800 da Getnet e um código de acesso de uso único, para o usuário ligar e
+  ser direcionado direto a um especialista sem repetir o que já contou no
+  chat.
+
+A chamada de handoff (de qualquer um dos dois fluxos) é capturada em
+`tools_used` e como um step de observabilidade, igual a qualquer outra
 chamada de tool.
 
 ---
