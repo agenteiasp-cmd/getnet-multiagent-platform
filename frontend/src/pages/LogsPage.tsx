@@ -54,7 +54,7 @@ export function LogsPage() {
 
       <ConversationFilters value={filters} onChange={setFilters} />
 
-      <div className="flex flex-1 gap-4 overflow-hidden">
+      <div className="flex h-[420px] gap-4">
         <ConversationList
           conversations={conversations}
           selectedId={selectedId}

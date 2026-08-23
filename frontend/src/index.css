@@ -42,9 +42,9 @@
 }
 
 :root {
-  /* Light theme (default) - matches the real getnet.com.br background
-     (white page, #f5f6f8 section fills), confirmed by inspecting the live
-     site rather than estimated. */
+  /* Only theme: matches the real getnet.com.br background (white page,
+     #f5f6f8 section fills), confirmed by inspecting the live site rather
+     than estimated. No dark theme - removed per product decision. */
   --gn-surface: #f5f6f8;
   --gn-surface-card: #ffffff;
   --gn-50: #f1f1f3;
@@ -57,38 +57,6 @@
   --gn-700: #5b5b66;
   --gn-800: #2a2a32;
   --gn-900: #101014;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --gn-surface: #0b0b0e;
-    --gn-surface-card: #16161c;
-    --gn-50: #1c1c22;
-    --gn-100: #2a2a32;
-    --gn-200: #34343e;
-    --gn-300: #45454f;
-    --gn-400: #6b6b78;
-    --gn-500: #ec0000;
-    --gn-600: #84848f;
-    --gn-700: #9a9aa8;
-    --gn-800: #c7c7d1;
-    --gn-900: #f5f5f7;
-  }
-}
-
-:root[data-theme="dark"] {
-  --gn-surface: #0b0b0e;
-  --gn-surface-card: #16161c;
-  --gn-50: #1c1c22;
-  --gn-100: #2a2a32;
-  --gn-200: #34343e;
-  --gn-300: #45454f;
-  --gn-400: #6b6b78;
-  --gn-500: #ec0000;
-  --gn-600: #84848f;
-  --gn-700: #9a9aa8;
-  --gn-800: #c7c7d1;
-  --gn-900: #f5f5f7;
 }
 
 body {

@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom'
-import { useTheme } from '../../hooks/useTheme'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Chat', icon: '💬' },
@@ -8,8 +7,6 @@ const NAV_ITEMS = [
 ]
 
 export function Sidebar() {
-  const { theme, toggleTheme } = useTheme()
-
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-getnet-100 bg-surface-card">
       <div className="flex items-center gap-2 px-6 py-6">
@@ -36,15 +33,6 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="border-t border-getnet-100 px-6 py-4">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label="Alternar tema claro/escuro"
-          className="mb-3 flex w-full items-center justify-between rounded-lg border border-getnet-100 px-3 py-2 text-xs font-medium text-getnet-800 hover:bg-getnet-50"
-        >
-          <span>{theme === 'dark' ? 'Tema escuro' : 'Tema claro'}</span>
-          <span aria-hidden="true">{theme === 'dark' ? '🌙' : '☀️'}</span>
-        </button>
         <p className="text-xs text-getnet-600">Plataforma de atendimento IA</p>
       </div>
     </aside>
