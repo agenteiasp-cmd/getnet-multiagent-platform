@@ -1,0 +1,44 @@
+[
+  {
+    "url": "https://www.getnet.net/en",
+    "topic": "institutional",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 5
+  },
+  {
+    "url": "https://site.getnet.com.br/maquininha/get-classica/",
+    "topic": "get-classica",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 5
+  },
+  {
+    "url": "https://site.getnet.com.br/get-ajuda-maquininha/solucoes-get-smart/",
+    "topic": "get-smart",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 3
+  },
+  {
+    "url": "https://site.getnet.com.br/link-de-pagamento/",
+    "topic": "payment-link",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 5
+  },
+  {
+    "url": "https://site.getnet.com.br/get-ajuda-antecipacao-de-venda/como-antecipar-sua-vendas-pelo-app/",
+    "topic": "antecipacao-recebiveis",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 3
+  },
+  {
+    "url": "https://site.getnet.com.br/duvidas/",
+    "topic": "faq",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 75
+  },
+  {
+    "url": "https://site.getnet.com.br/link-de-pagamento-getnet/",
+    "topic": "blog-payment-link",
+    "ingested_at": "2026-08-23",
+    "chunk_count": 5
+  }
+]

@@ -1,0 +1,98 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* getnet-50..400/600..900: theme-aware neutral scale (surfaces, borders,
+     text). getnet-500 only is brand red, same value in both themes - see
+     :root below. (600 stayed part of the red scale in an earlier revision
+     of this file; it collided with the many `text-getnet-600` muted-text
+     usages across the app, so it's neutral gray again - use
+     `--color-brand-red-2` directly for an intentional red hover/darker
+     accent instead.) */
+  --color-getnet-50: var(--gn-50);
+  --color-getnet-100: var(--gn-100);
+  --color-getnet-200: var(--gn-200);
+  --color-getnet-300: var(--gn-300);
+  --color-getnet-400: var(--gn-400);
+  --color-getnet-500: var(--gn-500);
+  --color-getnet-600: var(--gn-600);
+  --color-getnet-700: var(--gn-700);
+  --color-getnet-800: var(--gn-800);
+  --color-getnet-900: var(--gn-900);
+
+  --color-surface: var(--gn-surface);
+  --color-surface-card: var(--gn-surface-card);
+
+  /* Brand red family - confirmed from the official Getnet brand guide
+     (site.getnet.com.br/guia-digital-marca). Same across themes: red is an
+     accent for logo/primary-actions, not a surface color, so it doesn't
+     need to flip with light/dark. */
+  --color-brand-red: #ec0000;
+  --color-brand-red-2: #c1080f;
+  --color-brand-red-3: #95101e;
+
+  /* No neon/yellow/orange accent set: confirmed against the real brand
+     guide (site.getnet.com.br) that Getnet's palette is red + black/gray
+     only - an earlier estimated neon set (yellow/pink/purple/cyan/lime)
+     was removed. Chart series use src/lib/theme.ts's red + charcoal
+     shades instead. */
+}
+
+:root {
+  /* Light theme (default) - matches the real getnet.com.br background
+     (white page, #f5f6f8 section fills), confirmed by inspecting the live
+     site rather than estimated. */
+  --gn-surface: #f5f6f8;
+  --gn-surface-card: #ffffff;
+  --gn-50: #f1f1f3;
+  --gn-100: #e4e4e8;
+  --gn-200: #d3d3da;
+  --gn-300: #b8b8c2;
+  --gn-400: #8a8a96;
+  --gn-500: #ec0000;
+  --gn-600: #6f6f7a;
+  --gn-700: #5b5b66;
+  --gn-800: #2a2a32;
+  --gn-900: #101014;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --gn-surface: #0b0b0e;
+    --gn-surface-card: #16161c;
+    --gn-50: #1c1c22;
+    --gn-100: #2a2a32;
+    --gn-200: #34343e;
+    --gn-300: #45454f;
+    --gn-400: #6b6b78;
+    --gn-500: #ec0000;
+    --gn-600: #84848f;
+    --gn-700: #9a9aa8;
+    --gn-800: #c7c7d1;
+    --gn-900: #f5f5f7;
+  }
+}
+
+:root[data-theme="dark"] {
+  --gn-surface: #0b0b0e;
+  --gn-surface-card: #16161c;
+  --gn-50: #1c1c22;
+  --gn-100: #2a2a32;
+  --gn-200: #34343e;
+  --gn-300: #45454f;
+  --gn-400: #6b6b78;
+  --gn-500: #ec0000;
+  --gn-600: #84848f;
+  --gn-700: #9a9aa8;
+  --gn-800: #c7c7d1;
+  --gn-900: #f5f5f7;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-getnet-900);
+  font-family: var(--font-sans);
+}
