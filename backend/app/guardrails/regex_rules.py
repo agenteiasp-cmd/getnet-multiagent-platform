@@ -16,7 +16,8 @@ RULES: list[GuardrailRule] = [
     GuardrailRule(
         name="prompt_injection_ignore_instructions",
         pattern=re.compile(
-            r"\b(ignore|desconsidere|esque[çc]a)\b.{0,40}\b(instru[çc][õo]es|prompt|regras)\b",
+            r"\b(ignore|desconsidere|esque[çc]a)\b.{0,40}"
+            r"\b(instru[çc][õo]es|prompt|regras|restri[çc][õo]es|limites)\b",
             re.IGNORECASE,
         ),
         reason="Attempted prompt injection: instructs the system to ignore its instructions.",
@@ -47,6 +48,14 @@ RULES: list[GuardrailRule] = [
         pattern=re.compile(
             r"\b(burlar|contornar|bypass|jailbreak)\b"
             r"|\bmodo (dev|desenvolvedor|sem restri[çc][õo]es|irrestrito)\b"
+            # a command verb telling the assistant itself to act with no
+            # restriction/rules - not just any mention of "restrição"
+            # (e.g. "atendimento sem restrição de horário" is a normal,
+            # unrelated customer question and must NOT match).
+            r"|\b(aja|atue|responda|funcione|opere|comporte-se|haja)\b.{0,15}"
+            r"\bsem\b.{0,15}\b(restri[çc][ãa]o|restri[çc][õo]es|regras?|limites)\b"
+            r"|\bsem\b.{0,20}\b(restri[çc][ãa]o|restri[çc][õo]es|regras?|limites)\b.{0,30}"
+            r"\b(responda|diga|conte|revele|fa[çc]a)\b"
             r"|\bfinja que (voc[êe]|voce) (n[ãa]o tem|pode ignorar)\b",
             re.IGNORECASE,
         ),

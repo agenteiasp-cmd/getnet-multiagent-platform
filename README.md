@@ -345,10 +345,13 @@ mudança vale já na próxima requisição, sem precisar reiniciar.
 1. **Regras regex** (`regex_rules.py`): um conjunto pequeno e curado —
    frases de prompt injection, pedidos de credenciais/API keys, padrões de
    número de cartão, e três frentes adicionais: tentativas de jailbreak
-   ("burlar", "bypass", "modo sem restrições"), pedidos de dados de outro
-   cliente/usuário (risco de vazamento entre contas), e ações que
-   comprometeriam a integridade da plataforma (apagar/derrubar banco de
-   dados, servidor, sistema). Barato, sem chamada de rede, checado primeiro.
+   ("burlar", "bypass", "modo sem restrições", ou um verbo mandando o
+   próprio assistente "agir/atuar/funcionar sem regras/restrições/limites" —
+   sem confundir com uma pergunta legítima como "atendimento sem restrição
+   de horário"), pedidos de dados de outro cliente/usuário (risco de
+   vazamento entre contas), e ações que comprometeriam a integridade da
+   plataforma (apagar/derrubar banco de dados, servidor, sistema). Barato,
+   sem chamada de rede, checado primeiro.
 2. **Moderação OpenAI** (`moderation.py`): só é alcançada se a regex passar,
    para evitar pagar por uma chamada de moderação em uma entrada que já
    seria bloqueada.
