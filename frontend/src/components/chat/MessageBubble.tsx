@@ -17,7 +17,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
       data-testid="message-bubble"
       data-role={message.role}
     >
-      <div className={`flex max-w-lg flex-col gap-1.5 ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex min-w-0 max-w-lg flex-col gap-1.5 ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           className={`w-full break-words rounded-2xl px-4 py-3 text-sm shadow-sm ${
             isUser
@@ -28,7 +28,10 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
           {isUser ? (
             <p className="whitespace-pre-wrap break-words">{message.text}</p>
           ) : (
-            <div className="prose prose-sm max-w-none break-words prose-p:my-1 prose-ul:my-1 prose-headings:my-1">
+            <div
+              className="prose prose-sm max-w-none break-words prose-p:my-1 prose-ul:my-1 prose-headings:my-1
+                [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:break-words [&_a]:break-words"
+            >
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
             </div>
           )}
